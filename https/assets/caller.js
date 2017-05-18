@@ -20,8 +20,8 @@ const VideoEndPoint = (function() {
     attachMedia() {
       if (this._userMedia == null) {
         this._userMedia = navigator.mediaDevices.getUserMedia({
-          // audio: true,
           video: true,
+          audio: true,
         });
 
         this._userMedia
@@ -66,11 +66,13 @@ const VideoEndPoint = (function() {
         this._peerConnection = new RTCPeerConnection();
 
         this._peerConnection.onicecandidate = event => {
-          console.log('onicecandidate', event);
+          this.send(this._onCallWith, 'ICE_CANDIDATE', event.candidate);
         };
 
         this._peerConnection.onaddstream = remoteStream => {
-          console.log('onaddstream', remoteStream);
+          this._remoteStream = remoteStream.stream;
+          this._remoteVideoTag.srcObject = this._remoteStream;
+          this._remoteVideoTag.play();
         };
 
         this._peerConnection.addStream(mediaStream);
@@ -94,6 +96,9 @@ const VideoEndPoint = (function() {
 
         this._peerConnection.onaddstream = remoteStream => {
           console.log('onaddstream', remoteStream);
+          this._remoteStream = remoteStream.stream;
+          this._remoteVideoTag.srcObject = this._remoteStream;
+          this._remoteVideoTag.play();
         };
 
         this._peerConnection.addStream(mediaStream);
@@ -114,7 +119,19 @@ const VideoEndPoint = (function() {
       this._peerConnection.setRemoteDescription(remoteDescription);
     }
 
-    onReceiveICE(candidate) {}
+    onReceiveICE(data) {
+      if (data) {
+        const candidate = new RTCIceCandidate(data);
+        this._peerConnection.addIceCandidate(candidate).then(
+          () => {
+            console.log('Got ICE Candidate');
+          },
+          err => {
+            console.log("Can't find ICE Candidate: " + err);
+          }
+        );
+      }
+    }
 
     hangUp() {
       this.setState('IDLE');
