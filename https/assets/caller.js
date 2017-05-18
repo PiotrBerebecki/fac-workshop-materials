@@ -12,19 +12,19 @@ const VideoEndPoint = (function() {
       this._statusTag = statusTag;
       this._state = 'IDLE';
       this._onCallWith = null;
-      this._localMediaPromise = null;
+      this._userMedia = null;
 
       this.attachMedia();
     }
 
     attachMedia() {
-      if (this._localMediaPromise == null) {
-        this._localMediaPromise = navigator.mediaDevices.getUserMedia({
+      if (this._userMedia == null) {
+        this._userMedia = navigator.mediaDevices.getUserMedia({
           // audio: true,
           video: true,
         });
 
-        this._localMediaPromise
+        this._userMedia
           .then(mediaStream => {
             this._localVideoTag.srcObject = mediaStream;
             this._localVideoTag.play();
@@ -39,22 +39,47 @@ const VideoEndPoint = (function() {
     }
 
     makeCall(callTargetName, data) {
-      if (EndPoint.names[callTargetName]) {
-        // Only make a call if not already calling someone else
-        if (this._state === 'IDLE') {
-          this._onCallWith = callTargetName;
-          this.setState('CALLING');
-          this.send(callTargetName, 'CALL_REQUEST', data);
+      this._userMedia.then(mediaStream => {
+        if (EndPoint.names[callTargetName]) {
+          // Only make a call if not already calling someone else
+          if (this._state === 'IDLE') {
+            this._onCallWith = callTargetName;
+            this.setState('CALLING');
+            this.send(callTargetName, 'CALL_REQUEST', data);
+          }
+        } else {
+          console.log('Please enter a valid name');
+          return;
         }
-      } else {
-        console.log('Please enter a valid name');
-        return;
-      }
+      });
     }
 
     acceptCall() {
       this.send(this._onCallWith, 'ACCEPT_CALL');
       this.setState('CALLED');
+    }
+
+    onAcceptedCall() {
+      this.setState('ONTHEPHONE');
+
+      this._userMedia.then(mediaStream => {
+        const peerConnection = new RTCPeerConnection();
+
+        const offer = peerConnection.createOffer();
+        offer.then(sessionDescription => {
+          this.send(this._onCallWith, 'SDP_OFFER', sessionDescription);
+        });
+
+        peerConnection.onicecandidate = event => {
+          console.log('onicecandidate', event);
+        };
+
+        peerConnection.onaddstream = remoteStream => {
+          console.log('onaddstream', remoteStream);
+        };
+
+        peerConnection.addStream(mediaStream);
+      });
     }
 
     hangUp() {
@@ -87,7 +112,7 @@ const VideoEndPoint = (function() {
           this.setState('IDLE');
           break;
         case 'ACCEPT_CALL':
-          this.setState('ONTHEPHONE');
+          this.onAcceptedCall();
           break;
         case 'SDP_OFFER':
           break;
