@@ -70,17 +70,3 @@ hangUpBtns.forEach(button => {
     EndPoint.names[callerId].hangUp();
   });
 });
-
-// V1.send('V2', 'SDP_ANSWER', {a: 'yo'});
-
-// const videoTag = document.getElementById('videoTag');
-
-//   if (videoTag) {
-//     navigator.mediaDevices.getUserMedia({audio: true, video: true})
-// .then(function (mediaStream) {
-//   videoTag.srcObject = mediaStream;
-// })
-// .catch(function (err) {
-//   console.log('video not working', err);
-// });
-//   }

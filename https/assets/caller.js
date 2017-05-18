@@ -12,6 +12,25 @@ const VideoEndPoint = (function() {
       this._statusTag = statusTag;
       this._state = 'IDLE';
       this._onCallWith = null;
+      this._localMediaPromise = null;
+
+      this.attachMedia();
+    }
+
+    attachMedia() {
+      if (this._localMediaPromise == null) {
+        this._localMediaPromise = navigator.mediaDevices.getUserMedia({
+          // audio: true,
+          video: true,
+        });
+
+        this._localMediaPromise
+          .then(mediaStream => {
+            this._localVideoTag.srcObject = mediaStream;
+            this._localVideoTag.play();
+          })
+          .catch(err => console.log('video not working', err));
+      }
     }
 
     setState(newState) {
@@ -55,32 +74,32 @@ const VideoEndPoint = (function() {
         data
       );
       switch (operation) {
-      case 'CALL_REQUEST': {
-        this._onCallWith = from;
-        if (this._state === 'IDLE') {
-          this.acceptCall();
-        } else {
-          this.send(this._onCallWith, 'DENIED');
+        case 'CALL_REQUEST': {
+          this._onCallWith = from;
+          if (this._state === 'IDLE') {
+            this.acceptCall();
+          } else {
+            this.send(this._onCallWith, 'DENIED');
+          }
+          break;
         }
-        break;
-      }
-      case 'DENIED':
-        this.setState('IDLE');
-        break;
-      case 'ACCEPT_CALL':
-        this.setState('ONTHEPHONE');
-        break;
-      case 'SDP_OFFER':
-        break;
-      case 'SDP_ANSWER': {
-        this.send(from, 'SDP_OFFER', { a: 'hey to you too' });
-        break;
-      }
-      case 'ICE_CANDIDATE':
-        break;
-      case 'END_CALL':
-        this.setState('IDLE');
-        break;
+        case 'DENIED':
+          this.setState('IDLE');
+          break;
+        case 'ACCEPT_CALL':
+          this.setState('ONTHEPHONE');
+          break;
+        case 'SDP_OFFER':
+          break;
+        case 'SDP_ANSWER': {
+          this.send(from, 'SDP_OFFER', { a: 'hey to you too' });
+          break;
+        }
+        case 'ICE_CANDIDATE':
+          break;
+        case 'END_CALL':
+          this.setState('IDLE');
+          break;
       }
     }
     /** @method hangupCall
