@@ -63,24 +63,58 @@ const VideoEndPoint = (function() {
       this.setState('ONTHEPHONE');
 
       this._userMedia.then(mediaStream => {
-        const peerConnection = new RTCPeerConnection();
+        this._peerConnection = new RTCPeerConnection();
 
-        const offer = peerConnection.createOffer();
-        offer.then(sessionDescription => {
-          this.send(this._onCallWith, 'SDP_OFFER', sessionDescription);
-        });
-
-        peerConnection.onicecandidate = event => {
+        this._peerConnection.onicecandidate = event => {
           console.log('onicecandidate', event);
         };
 
-        peerConnection.onaddstream = remoteStream => {
+        this._peerConnection.onaddstream = remoteStream => {
           console.log('onaddstream', remoteStream);
         };
 
-        peerConnection.addStream(mediaStream);
+        this._peerConnection.addStream(mediaStream);
+
+        const offer = this._peerConnection.createOffer();
+
+        offer.then(sessionDescription => {
+          this._peerConnection.setLocalDescription(sessionDescription);
+          this.send(this._onCallWith, 'SDP_OFFER', sessionDescription);
+        });
       });
     }
+
+    onReceiveOffer(remoteDescription) {
+      this._userMedia.then(mediaStream => {
+        this._peerConnection = new RTCPeerConnection();
+
+        this._peerConnection.onicecandidate = event => {
+          this.send(this._onCallWith, 'ICE_CANDIDATE', event.candidate);
+        };
+
+        this._peerConnection.onaddstream = remoteStream => {
+          console.log('onaddstream', remoteStream);
+        };
+
+        this._peerConnection.addStream(mediaStream);
+
+        this._peerConnection
+          .setRemoteDescription(remoteDescription)
+          .then(() => {
+            return this._peerConnection.createAnswer();
+          })
+          .then(answer => {
+            this._peerConnection.setLocalDescription(answer);
+            this.send(this._onCallWith, 'SDP_ANSWER', answer);
+          });
+      });
+    }
+
+    onReceiveAnswer(remoteDescription) {
+      this._peerConnection.setRemoteDescription(remoteDescription);
+    }
+
+    onReceiveICE(candidate) {}
 
     hangUp() {
       this.setState('IDLE');
@@ -99,32 +133,34 @@ const VideoEndPoint = (function() {
         data
       );
       switch (operation) {
-        case 'CALL_REQUEST': {
-          this._onCallWith = from;
-          if (this._state === 'IDLE') {
-            this.acceptCall();
-          } else {
-            this.send(this._onCallWith, 'DENIED');
-          }
-          break;
+      case 'CALL_REQUEST': {
+        this._onCallWith = from;
+        if (this._state === 'IDLE') {
+          this.acceptCall();
+        } else {
+          this.send(this._onCallWith, 'DENIED');
         }
-        case 'DENIED':
-          this.setState('IDLE');
-          break;
-        case 'ACCEPT_CALL':
-          this.onAcceptedCall();
-          break;
-        case 'SDP_OFFER':
-          break;
-        case 'SDP_ANSWER': {
-          this.send(from, 'SDP_OFFER', { a: 'hey to you too' });
-          break;
-        }
-        case 'ICE_CANDIDATE':
-          break;
-        case 'END_CALL':
-          this.setState('IDLE');
-          break;
+        break;
+      }
+      case 'DENIED':
+        this.setState('IDLE');
+        break;
+      case 'ACCEPT_CALL':
+        this.onAcceptedCall();
+        break;
+      case 'SDP_OFFER':
+        this.onReceiveOffer(data);
+        break;
+      case 'SDP_ANSWER': {
+        this.onReceiveAnswer(data);
+        break;
+      }
+      case 'ICE_CANDIDATE':
+        this.onReceiveICE(data);
+        break;
+      case 'END_CALL':
+        this.setState('IDLE');
+        break;
       }
     }
     /** @method hangupCall
