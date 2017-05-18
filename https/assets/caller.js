@@ -5,11 +5,12 @@ const VideoEndPoint = (function() {
      *  represents an actual video UI end point.
    */
   class VideoEndPoint extends EndPoint {
-    constructor(ep_name, remoteVideoTag, localVideoTag, statusTag) {
+    constructor(ep_name, remoteVideoTag, localVideoTag, statusTag, hangUpTag) {
       super(ep_name);
       this._remoteVideoTag = remoteVideoTag;
       this._localVideoTag = localVideoTag;
       this._statusTag = statusTag;
+      this._hangUpTag = hangUpTag;
       this._state = 'IDLE';
       this._onCallWith = null;
       this._userMedia = null;
@@ -38,6 +39,14 @@ const VideoEndPoint = (function() {
       this._state = newState;
     }
 
+    showTag(tag) {
+      tag.classList.remove('hidden');
+    }
+
+    hideTag(tag) {
+      tag.classList.add('hidden');
+    }
+
     makeCall(callTargetName, data) {
       this._userMedia.then(mediaStream => {
         // Only make a call if not already calling someone else
@@ -45,6 +54,7 @@ const VideoEndPoint = (function() {
           this._onCallWith = callTargetName;
           this.setState('CALLING');
           this.send(callTargetName, 'CALL_REQUEST', data);
+          this.showTag(this._localVideoTag);
         }
       });
     }
@@ -106,12 +116,16 @@ const VideoEndPoint = (function() {
           .then(answer => {
             this._peerConnection.setLocalDescription(answer);
             this.send(this._onCallWith, 'SDP_ANSWER', answer);
+            this.showTag(this._remoteVideoTag);
+            this.showTag(this._hangUpTag);
           });
       });
     }
 
     onReceiveAnswer(remoteDescription) {
       this._peerConnection.setRemoteDescription(remoteDescription);
+      this.showTag(this._remoteVideoTag);
+      this.showTag(this._hangUpTag);
     }
 
     onReceiveICE(data) {
@@ -130,7 +144,11 @@ const VideoEndPoint = (function() {
 
     hangUp() {
       this.setState('IDLE');
+      this._remoteVideoTag.srcObject = null;
       this.send(this._onCallWith, 'END_CALL');
+      this.hideTag(this._remoteVideoTag);
+      this.hideTag(this._localVideoTag);
+      this.hideTag(this._hangUpTag);
     }
     /** @method receive
          *  @description Entry point called by the base class when it receives a message for this object from another EndPoint.
@@ -145,35 +163,39 @@ const VideoEndPoint = (function() {
         data
       );
       switch (operation) {
-        case 'CALL_REQUEST': {
-          this._onCallWith = from;
-          if (this._state === 'IDLE') {
-            this.acceptCall();
-          } else {
-            this.send(this._onCallWith, 'DENIED');
-          }
-          break;
+      case 'CALL_REQUEST': {
+        this._onCallWith = from;
+        if (this._state === 'IDLE') {
+          this.acceptCall();
+        } else {
+          this.send(this._onCallWith, 'DENIED');
         }
-        case 'DENIED':
-          this.setState('IDLE');
-          break;
-        case 'ACCEPT_CALL':
-          this.onAcceptedCall();
-          break;
-        case 'SDP_OFFER':
-          this.onReceiveOffer(data);
-          break;
-        case 'SDP_ANSWER': {
-          this.onReceiveAnswer(data);
-          break;
-        }
-        case 'ICE_CANDIDATE':
-          this.onReceiveICE(data);
-          break;
-        case 'END_CALL':
-          this.setState('IDLE');
-          this._peerConnection.close();
-          break;
+        break;
+      }
+      case 'DENIED':
+        this.setState('IDLE');
+        break;
+      case 'ACCEPT_CALL':
+        this.onAcceptedCall();
+        break;
+      case 'SDP_OFFER':
+        this.onReceiveOffer(data);
+        break;
+      case 'SDP_ANSWER': {
+        this.onReceiveAnswer(data);
+        break;
+      }
+      case 'ICE_CANDIDATE':
+        this.onReceiveICE(data);
+        break;
+      case 'END_CALL':
+        this.setState('IDLE');
+        this._remoteVideoTag.srcObject = null;
+        this.hideTag(this._remoteVideoTag);
+        this.hideTag(this._localVideoTag);
+        this.hideTag(this._hangUpTag);
+        this._peerConnection.close();
+        break;
       }
     }
     /** @method hangupCall

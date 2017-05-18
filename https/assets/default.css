@@ -1,70 +1,100 @@
+* {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+}
+
 body {
-  font-family: 'Lato', sans-serif;
-
-}
-#page_wrap {
-  margin:20px;
-  border:1px solid #000;
-  border-radius: 5px;
-  padding:20px;
-}
-#banner {
-  position: relative;
-  padding-bottom:30px;
-}
-#banner .strap {
-  float:right;
-  font-size:36px;
-  position: absolute;
-  top: 0px; right:0;
-  color: #000
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  color: papayawhip;
+  background-color: palevioletred;
 }
 
-/**** General purpose styles ****/
+input,
+button {
+  padding: 0.25em 0.5em;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: 2px solid papayawhip;
+  -webkit-transition: background-color 0.2s;
+  -o-transition: background-color 0.2s;
+  transition: background-color 0.2s;
+}
+
+input::placeholder {
+  color: inherit;
+}
+
+input:focus {
+  outline: none;
+  color: palevioletred;
+  background-color: papayawhip;
+}
+
+button:hover {
+  color: palevioletred;
+  background-color: papayawhip;
+}
+
+.container {
+  /*max-width: 40em;
+  margin: 0 auto;*/
+  height: 100%;
+  padding: 1em;
+  display: flex;
+  -ms-align-items: center;
+  align-items: center;
+  justify-content: center;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+}
+
 .hidden {
   position:absolute;
   top: -10000px;
-  left:0
-}
-/**** Dialogs ****/
-#resources .hide {
-  display:none
+  left:0;
+  display: none;
 }
 
-video.remoteVideo {width:100%;height:auto;border:1px solid #c0c0c0}
-video.localVideo {width:100px;height:auto;border:1px solid #c0c0c0;position:relative;bottom:10px;right:-10px}
-
-
-form .message {color:#ff0000; font-weight:bold;text-align:center}
-.stdForm .form-group {
-  margin-bottom:10px;
-}
-.stdForm button {
-  xbackground-color:#e0e0e0;
-  font-size:24px;
-  padding: 5px;
-  background-color: #e0e0e0;
-  border: 1px solid #df1314;
-  color: #000;
-  border-radius: 5px;
-}
-.stdForm button:hover {
-  background-color: #c0c0c0;
-  box-shadow: 2px 2px 5px #ccc
-}
-input[type="text"], input[type="password"], input[type="email"] {
-  font-size:24px;
+.remoteVideo {
   width: 100%;
-  padding:5px;
-  border:1px solid #e0e0e0;
-  border-radius:5px;
-  outline:0;
-}
-input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focus {
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  object-fit: cover;
 }
 
-input[type="text"].error, input[type="password"].error {
-  border:1px solid red;
-  box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(255,102,0,.6)
+.localVideo {
+  position: absolute;
+  width: 6em;
+  height: auto;
+  bottom: 1em;
+  right: 1em;
+  box-shadow: 0 5px 5px rgba(0, 0, 0, 0.4);
 }
-input[type="text"].error {border:1px solid red; shadow: 5px 5px}
+
+.form {
+  display: flex;
+  width: 20em;
+  height: 2em;
+}
+
+.form__input {
+  border-right: none;
+  flex: 1;
+}
+
+.endCall {
+  position: absolute;
+  bottom: 1em;
+  left: 1em;
+  box-shadow: 0 5px 5px rgba(0, 0, 0, 0.4);
+}

@@ -37,38 +37,38 @@
 const formDOM = document.getElementById('identity');
 const videoControlsDOM = document.getElementById('videocontrols');
 
-const callBtn = document.querySelector('.startCall');
-const hangUpBtn = document.querySelector('.endCall');
-
 formDOM.addEventListener('submit', event => {
   event.preventDefault();
   const callerName = event.target[0].value;
-  // console.log(callerName);
   formDOM.classList.add('hidden');
   videoControlsDOM.classList.remove('hidden');
 
   const remoteVideoTag = document.querySelector('.remoteVideo');
   const localVideoTag = document.querySelector('.localVideo');
   const stateTag = document.querySelector('.state');
+  const hangUpTag = document.querySelector('.endCall');
 
   const caller = new VideoEndPoint(
     callerName,
     remoteVideoTag,
     localVideoTag,
-    stateTag
+    stateTag,
+    hangUpTag
   );
 
-  const getCallTarget = button => {
-    return button.parentElement.querySelector('.target').value;
-  };
-
-  callBtn.addEventListener('click', () => {
-    const callTargetName = getCallTarget(callBtn);
-    EndPoint.names[callerName].makeCall(callTargetName);
+  videoControlsDOM.addEventListener('submit', event => {
+    showVideo(event);
   });
 
-  hangUpBtn.addEventListener('click', () => {
+  function showVideo(event) {
+    event.preventDefault();
+    const callTargetName = event.target[0].value;
+    // remoteVideoTag.classList.remove('hidden');
+    // localVideoTag.classList.remove('hidden');
+    EndPoint.names[callerName].makeCall(callTargetName);
+  }
+
+  hangUpTag.addEventListener('click', () => {
     EndPoint.names[callerName].hangUp();
-    console.log('hanging up');
   });
 });
