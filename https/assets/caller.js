@@ -40,16 +40,11 @@ const VideoEndPoint = (function() {
 
     makeCall(callTargetName, data) {
       this._userMedia.then(mediaStream => {
-        if (EndPoint.names[callTargetName]) {
-          // Only make a call if not already calling someone else
-          if (this._state === 'IDLE') {
-            this._onCallWith = callTargetName;
-            this.setState('CALLING');
-            this.send(callTargetName, 'CALL_REQUEST', data);
-          }
-        } else {
-          console.log('Please enter a valid name');
-          return;
+        // Only make a call if not already calling someone else
+        if (this._state === 'IDLE') {
+          this._onCallWith = callTargetName;
+          this.setState('CALLING');
+          this.send(callTargetName, 'CALL_REQUEST', data);
         }
       });
     }
@@ -150,34 +145,35 @@ const VideoEndPoint = (function() {
         data
       );
       switch (operation) {
-      case 'CALL_REQUEST': {
-        this._onCallWith = from;
-        if (this._state === 'IDLE') {
-          this.acceptCall();
-        } else {
-          this.send(this._onCallWith, 'DENIED');
+        case 'CALL_REQUEST': {
+          this._onCallWith = from;
+          if (this._state === 'IDLE') {
+            this.acceptCall();
+          } else {
+            this.send(this._onCallWith, 'DENIED');
+          }
+          break;
         }
-        break;
-      }
-      case 'DENIED':
-        this.setState('IDLE');
-        break;
-      case 'ACCEPT_CALL':
-        this.onAcceptedCall();
-        break;
-      case 'SDP_OFFER':
-        this.onReceiveOffer(data);
-        break;
-      case 'SDP_ANSWER': {
-        this.onReceiveAnswer(data);
-        break;
-      }
-      case 'ICE_CANDIDATE':
-        this.onReceiveICE(data);
-        break;
-      case 'END_CALL':
-        this.setState('IDLE');
-        break;
+        case 'DENIED':
+          this.setState('IDLE');
+          break;
+        case 'ACCEPT_CALL':
+          this.onAcceptedCall();
+          break;
+        case 'SDP_OFFER':
+          this.onReceiveOffer(data);
+          break;
+        case 'SDP_ANSWER': {
+          this.onReceiveAnswer(data);
+          break;
+        }
+        case 'ICE_CANDIDATE':
+          this.onReceiveICE(data);
+          break;
+        case 'END_CALL':
+          this.setState('IDLE');
+          this._peerConnection.close();
+          break;
       }
     }
     /** @method hangupCall

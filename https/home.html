@@ -1,73 +1,42 @@
 <html>
   <head>
-    <title>Hello World</title>
+    <title>Founders and Coders - Web RTC Workshop</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <link href='//fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
-    <script src="/assets/adapter.js"></script>
+
     <link rel="stylesheet" href='/assets/grid.css'>
     <link rel="stylesheet" href='/assets/default.css'>
   </head>
   <body>
-
     <script type="text/javascript">
     </script>
     <div class="container">
       <div class='row' id="banner">
         <div class="col-xs-12" id='logo-container'>
-          <h1>webRTC Local Signaling Demo</h1>
+          <h1>Web RTC Comms</h1>
+          <form id="identity" autocomplete="off">
+            <input type="text" name="myname" autofocus class="myname" placeholder="Enter your name">
+            <button class="initialise">start</button>
+          </form>
         </div>
       </div>
-      <div class="row">
-        <div class="col-xs-12 col-md-6" id='V1' style="outline:2px solid #c0c0c0;position:relative">
-          <h2>Party 1</h2>
+      <div id="videocontrols" class="row hidden">
+        <div class="col-xs-12" id="videowrap" style="outline:2px solid #c0c0c0;position:relative">
+          <h2>Call...</h2>
+          <p>Status: <span class="state">IDLE</span></p>
           <button class="pause">Pause</button>
           <button class="endCall">Hangup</button>
           <input type="text" name="target" class="target" placeholder="Enter recipient call name">
           <button class="startCall">Call</button>
-          <span class="state">IDLE</span>
-          <video class="remoteVideo"></video>
-          <video class="localVideo" muted></video>
-        </div>
-        <div class="col-xs-12 col-md-6" id='V2' style="outline:2px solid #c0c0c0;position:relative">
-          <h2>Party 2</h2>
-          <button class="pause">Pause</button>
-          <button class="endCall">Hangup</button>
-          <input type="text" name="target" class="target" placeholder="Enter recipient call name">
-          <button class="startCall">Call</button>
-          <span class="state">IDLE</span>
-          <video class="remoteVideo"></video>
-          <video class="localVideo" muted></video>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-xs-12 col-md-6" id='V3' style="outline:2px solid #c0c0c0;position:relative">
-          <h2>Party 3</h2>
-          <button class="pause">Pause</button>
-          <button class="endCall">Hangup</button>
-          <input type="text" name="target" class="target" placeholder="Enter recipient call name">
-          <button class="startCall">Call</button>
-          <span class="state">IDLE</span>
-          <video class="remoteVideo"></video>
-          <video class="localVideo" muted></video>
-        </div>
-        <div class="col-xs-12 col-md-6" id='V4' style="outline:2px solid #c0c0c0;position:relative">
-          <h2>Party 4</h2>
-          <button class="pause">Pause</button>
-          <button class="endCall">Hangup</button>
-          <input type="text" name="target" class="target" placeholder="Enter recipient call name">
-          <button class="startCall">Call</button>
-          <span class="state">IDLE</span>
           <video class="remoteVideo"></video>
           <video class="localVideo" muted></video>
         </div>
       </div>
     </div>
 
-
-    <script type="text/javascript" src="assets/comms.js"></script>
-    <script type="text/javascript" src="assets/caller.js"></script>
-    <script type="text/javascript" src="assets/driver.js"></script>
-
-
+    <script src="/assets/adapter.js"></script>
+    <script src="/assets/comms.js"></script>
+    <script src="/assets/caller.js"></script>
+    <script src="/assets/driver.js"></script>
   </body>
 </head>
